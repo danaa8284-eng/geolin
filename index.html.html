@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard Lead per Jam</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f6fa;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .chart-box {
+      background: #fff;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    canvas {
+      width: 100% !important;
+      height: 60vh !important;
+    }
+
+    /* HP */
+    @media (max-width: 768px) {
+      canvas {
+        height: 40vh !important;
+      }
+
+      h2 {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>Grafik Lead per Jam</h2>
+
+  <div class="chart-box">
+    <canvas id="chart"></canvas>
+  </div>
+</div>
+
+<script>
+const sheetURL = "URL_SHEET_KAMU";
+
+fetch(sheetURL)
+  .then(res => res.text())
+  .then(data => {
+    const rows = data.split("\n").slice(1);
+
+    const jamCounts = {};
+    for (let i = 0; i < 24; i++) {
+      const jam = i.toString().padStart(2, "0");
+      jamCounts[jam] = 0;
+    }
+
+    rows.forEach(row => {
+      const cols = row.split(",");
+      const jam = cols[5];
+
+      if (!jam) return;
+
+      const jamOnly = jam.split(":")[0];
+
+      if (jamCounts[jamOnly] !== undefined) {
+        jamCounts[jamOnly]++;
+      }
+    });
+
+    const labels = [];
+    const values = [];
+
+    for (let i = 0; i < 24; i++) {
+      const jam = i.toString().padStart(2, "0");
+      labels.push(i + 1);
+      values.push(jamCounts[jam]);
+    }
+
+    new Chart(document.getElementById("chart"), {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [{
+          label: "Jumlah Lead",
+          data: values,
+          borderWidth: 2,
+          tension: 0.3,
+          pointRadius: 3
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false, // 🔥 penting biar fleksibel
+        plugins: {
+          legend: {
+            display: true
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            min: 0,
+            max: 400,
+            ticks: {
+              stepSize: 50
+            }
+          },
+          x: {
+            ticks: {
+              autoSkip: false
+            }
+          }
+        }
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
