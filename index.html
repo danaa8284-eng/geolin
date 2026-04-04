@@ -102,7 +102,6 @@ body {
 <script>
 let chart;
 
-// GANTI INI
 const API_URL = "https://script.google.com/macros/s/AKfycby2ehtY358ZM9kkRF9tpyU9HInuevVZyKXnPltrbXY4PuigxVKmcyYTl3fwGzC-oN_Yrw/exec";
 
 async function loadData() {
@@ -116,9 +115,8 @@ async function loadData() {
     const end = document.getElementById("endDate").value;
 
     let grouped = {};
-    let filteredData = [];
+    let total = 0;
 
-    // cek apakah 1 hari
     const isSingleDay = start && end && start === end;
 
     data.forEach(item => {
@@ -137,26 +135,20 @@ async function loadData() {
       if (isSingleDay) {
         if (!time) return;
 
-        // 🔥 FORMAT JAM JADI 00.00
         label = String(time)
           .replace(":", ".")
           .substring(0, 5);
-
       } else {
         label = date;
       }
 
-      filteredData.push(label);
-
       if (!grouped[label]) grouped[label] = 0;
       grouped[label]++;
+      total++;
     });
 
-    // TOTAL SESUAI FILTER
-    const total = filteredData.length;
     document.getElementById("totalChat").innerText = total;
 
-    // SORT
     let labels = Object.keys(grouped);
 
     if (isSingleDay) {
@@ -165,38 +157,6 @@ async function loadData() {
       labels.sort();
     }
 
-    const values = labels.map(l => grouped[l]);
-
-    renderChart(labels, values);
-
-  } catch (err) {
-    console.error("Error:", err);
-    alert("Gagal ambil data");
-  }
-
-  document.getElementById("loading").style.display = "none";
-}
-
-    // ✅ TOTAL = HASIL FILTER (bukan dari semua data)
-    const total = filteredData.length;
-    document.getElementById("totalChat").innerText = total;
-
-    const labels = Object.keys(grouped).sort();
-    const values = labels.map(l => grouped[l]);
-
-    renderChart(labels, values);
-
-  } catch (err) {
-    console.error("Error:", err);
-    alert("Gagal ambil data");
-  }
-
-  document.getElementById("loading").style.display = "none";
-}
-
-    document.getElementById("totalChat").innerText = total;
-
-    const labels = Object.keys(grouped).sort();
     const values = labels.map(l => grouped[l]);
 
     renderChart(labels, values);
@@ -228,9 +188,9 @@ function renderChart(labels, data) {
   });
 }
 
-// load awal
 loadData();
 </script>
+
 
 </body>
 </html>
