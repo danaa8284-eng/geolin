@@ -1,136 +1,123 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-  <title>Dashboard Lead per Jam</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8">
+<title>Dashboard Chat</title>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f5f6fa;
-    }
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    .container {
-      max-width: 1200px;
-      margin: auto;
-      padding: 20px;
-    }
+<style>
+body {
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+  padding: 20px;
+}
 
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
+.container {
+  max-width: 900px;
+  margin: auto;
+}
 
-    .chart-box {
-      background: #fff;
-      padding: 15px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-    }
+.card {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
 
-    canvas {
-      width: 100% !important;
-      height: 60vh !important;
-    }
+.total {
+  font-size: 40px;
+  font-weight: bold;
+}
 
-    /* HP */
-    @media (max-width: 768px) {
-      canvas {
-        height: 40vh !important;
-      }
-
-      h2 {
-        font-size: 18px;
-      }
-    }
-  </style>
+.filter {
+  margin-bottom: 20px;
+}
+</style>
 </head>
 
 <body>
 
 <div class="container">
-  <h2>Grafik Lead per Jam</h2>
 
-  <div class="chart-box">
+  <!-- FILTER -->
+  <div class="card filter">
+    <label>Tanggal:</label>
+    <input type="date" id="startDate">
+    <input type="date" id="endDate">
+    <button onclick="loadData()">Filter</button>
+  </div>
+
+  <!-- TOTAL -->
+  <div class="card">
+    <div>Total Chat</div>
+    <div class="total" id="totalChat">0</div>
+  </div>
+
+  <!-- CHART -->
+  <div class="card">
     <canvas id="chart"></canvas>
   </div>
+
 </div>
 
 <script>
-const sheetURL = "URL_SHEET_KAMU";
+let chart;
 
-fetch(sheetURL)
-  .then(res => res.text())
-  .then(data => {
-    const rows = data.split("\n").slice(1);
+// GANTI DENGAN URL WEB APP GOOGLE SHEETS KAMU
+const API_URL = "https://script.google.com/macros/s/XXXX/exec";
 
-    const jamCounts = {};
-    for (let i = 0; i < 24; i++) {
-      const jam = i.toString().padStart(2, "0");
-      jamCounts[jam] = 0;
-    }
+async function loadData() {
+  const res = await fetch(API_URL);
+  const data = await res.json();
 
-    rows.forEach(row => {
-      const cols = row.split(",");
-      const jam = cols[5];
+  const start = document.getElementById("startDate").value;
+  const end = document.getElementById("endDate").value;
 
-      if (!jam) return;
+  let grouped = {};
+  let total = 0;
 
-      const jamOnly = jam.split(":")[0];
+  data.forEach(item => {
+    let date = item.date;
 
-      if (jamCounts[jamOnly] !== undefined) {
-        jamCounts[jamOnly]++;
-      }
-    });
+    if (start && date < start) return;
+    if (end && date > end) return;
 
-    const labels = [];
-    const values = [];
+    if (!grouped[date]) grouped[date] = 0;
 
-    for (let i = 0; i < 24; i++) {
-      const jam = i.toString().padStart(2, "0");
-      labels.push(i + 1);
-      values.push(jamCounts[jam]);
-    }
-
-    new Chart(document.getElementById("chart"), {
-      type: "line",
-      data: {
-        labels: labels,
-        datasets: [{
-          label: "Jumlah Lead",
-          data: values,
-          borderWidth: 2,
-          tension: 0.3,
-          pointRadius: 3
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false, // 🔥 penting biar fleksibel
-        plugins: {
-          legend: {
-            display: true
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            min: 0,
-            max: 400,
-            ticks: {
-              stepSize: 50
-            }
-          },
-          x: {
-            ticks: {
-              autoSkip: false
-            }
-          }
-        }
-      }
-    });
+    grouped[date]++;
+    total++;
   });
+
+  document.getElementById("totalChat").innerText = total;
+
+  const labels = Object.keys(grouped);
+  const values = Object.values(grouped);
+
+  renderChart(labels, values);
+}
+
+function renderChart(labels, data) {
+  if (chart) chart.destroy();
+
+  const ctx = document.getElementById("chart");
+
+  chart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Jumlah Chat",
+        data: data,
+        borderWidth: 2
+      }]
+    }
+  });
+}
+
+// load pertama
+loadData();
 </script>
 
 </body>
