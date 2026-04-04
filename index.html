@@ -18,7 +18,7 @@ body {
 /* CONTAINER */
 .container {
   width: 100%;
-  max-width: 1300px;
+  max-width: 1200px;
   margin: auto;
 }
 
@@ -69,6 +69,11 @@ body {
 
 .filter button:hover {
   background: #0ea5e9;
+}
+
+/* CHART HEIGHT FIX */
+canvas {
+  height: 300px !important;
 }
 
 /* LOADING */
@@ -143,6 +148,14 @@ let chart;
 
 const API_URL = "https://script.google.com/macros/s/AKfycby2ehtY358ZM9kkRF9tpyU9HInuevVZyKXnPltrbXY4PuigxVKmcyYTl3fwGzC-oN_Yrw/exec";
 
+function formatDateLocal(dateStr) {
+  const d = new Date(dateStr);
+  const year = d.getFullYear();
+  const month = String(d.getMonth()+1).padStart(2,"0");
+  const day = String(d.getDate()).padStart(2,"0");
+  return `${year}-${month}-${day}`;
+}
+
 async function loadData() {
   document.getElementById("loading").style.display = "flex";
 
@@ -164,7 +177,8 @@ async function loadData() {
 
       if (!date) return;
 
-      date = String(date).substring(0, 10);
+      // 🔥 FIX TIMEZONE
+      date = formatDateLocal(date);
 
       if (start && date < start) return;
       if (end && date > end) return;
@@ -174,10 +188,8 @@ async function loadData() {
       if (isSingleDay) {
         if (!time) return;
 
-        // PER JAM (00.00)
         let hour = String(time).substring(0, 2);
         label = hour + ".00";
-
       } else {
         label = date;
       }
@@ -192,11 +204,12 @@ async function loadData() {
     let labels;
 
     if (isSingleDay) {
-      // tampilkan 00–23 lengkap
       labels = [];
+
       for (let i = 0; i < 24; i++) {
         let h = String(i).padStart(2, "0") + ".00";
         labels.push(h);
+
         if (!grouped[h]) grouped[h] = 0;
       }
     } else {
@@ -234,12 +247,12 @@ function renderChart(labels, data) {
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       scales: {
         x: {
           ticks: {
-            maxRotation: 0,
-            autoSkip: true,
-            maxTicksLimit: 12
+            autoSkip: false, // 🔥 semua jam tampil
+            maxRotation: 0
           }
         }
       }
