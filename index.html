@@ -1,148 +1,3 @@
-<!DOCTYPE html>
-
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<title>Dashboard Chat</title>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-body {
-  font-family: Arial;
-  background: #0f172a;
-  color: white;
-  padding: 20px;
-}
-
-/* CONTAINER */
-.container {
-  width: 100%;
-  max-width: 1200px;
-  margin: auto;
-}
-
-/* CARD */
-.card {
-  background: #1e293b;
-  padding: 20px;
-  border-radius: 12px;
-  margin-bottom: 20px;
-}
-
-/* TOTAL */
-.total {
-  font-size: 40px;
-  font-weight: bold;
-}
-
-/* FILTER */
-.filter {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.filter label {
-  font-weight: bold;
-}
-
-.filter input {
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: none;
-  background: #0f172a;
-  color: white;
-}
-
-.filter button {
-  padding: 8px 16px;
-  background: #38bdf8;
-  border: none;
-  border-radius: 6px;
-  color: black;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.filter button:hover {
-  background: #0ea5e9;
-}
-
-/* CHART HEIGHT FIX */
-canvas {
-  height: 300px !important;
-}
-
-/* LOADING */
-.loading {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(15, 23, 42, 0.9);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  z-index: 999;
-}
-
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid #334155;
-  border-top: 5px solid #38bdf8;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 10px;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-</style>
-
-</head>
-
-<body>
-
-<div class="container">
-
-  <!-- FILTER -->
-
-  <div class="card filter">
-    <label>Tanggal:</label>
-    <input type="date" id="startDate">
-    <input type="date" id="endDate">
-    <button onclick="loadData()">Filter</button>
-  </div>
-
-  <!-- TOTAL -->
-
-  <div class="card">
-    <div>Total Chat</div>
-    <div class="total" id="totalChat">0</div>
-  </div>
-
-  <!-- CHART -->
-
-  <div class="card">
-    <canvas id="chart"></canvas>
-  </div>
-
-</div>
-
-<!-- LOADING -->
-
-<div id="loading" class="loading">
-  <div class="spinner"></div>
-  <p>Memuat data...</p>
-</div>
-
 <script>
 let chart;
 
@@ -177,7 +32,6 @@ async function loadData() {
 
       if (!date) return;
 
-      // 🔥 FIX TIMEZONE
       date = formatDateLocal(date);
 
       if (start && date < start) return;
@@ -188,8 +42,15 @@ async function loadData() {
       if (isSingleDay) {
         if (!time) return;
 
-        let hour = String(time).substring(0, 2);
+        // 🔥 FIX JAM 100% AKURAT
+        let rawTime = String(time).trim();
+        rawTime = rawTime.replace(".", ":");
+
+        let parts = rawTime.split(":");
+        let hour = parts[0].padStart(2, "0");
+
         label = hour + ".00";
+
       } else {
         label = date;
       }
@@ -251,7 +112,7 @@ function renderChart(labels, data) {
       scales: {
         x: {
           ticks: {
-            autoSkip: false, // 🔥 semua jam tampil
+            autoSkip: false,
             maxRotation: 0
           }
         }
@@ -262,6 +123,3 @@ function renderChart(labels, data) {
 
 loadData();
 </script>
-
-</body>
-</html>
