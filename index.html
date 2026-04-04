@@ -116,22 +116,45 @@ async function loadData() {
     const end = document.getElementById("endDate").value;
 
     let grouped = {};
-    let total = 0;
+    let filteredData = [];
 
     data.forEach(item => {
       let date = item.date;
 
-      // skip kalau date kosong
+      // skip kalau kosong
       if (!date) return;
 
+      // pastikan format YYYY-MM-DD
+      date = String(date).substring(0, 10);
+
+      // FILTER TANGGAL
       if (start && date < start) return;
       if (end && date > end) return;
 
-      if (!grouped[date]) grouped[date] = 0;
+      // simpan data yang lolos filter
+      filteredData.push(date);
 
+      // grouping
+      if (!grouped[date]) grouped[date] = 0;
       grouped[date]++;
-      total++;
     });
+
+    // ✅ TOTAL = HASIL FILTER (bukan dari semua data)
+    const total = filteredData.length;
+    document.getElementById("totalChat").innerText = total;
+
+    const labels = Object.keys(grouped).sort();
+    const values = labels.map(l => grouped[l]);
+
+    renderChart(labels, values);
+
+  } catch (err) {
+    console.error("Error:", err);
+    alert("Gagal ambil data");
+  }
+
+  document.getElementById("loading").style.display = "none";
+}
 
     document.getElementById("totalChat").innerText = total;
 
