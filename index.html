@@ -15,11 +15,14 @@ body {
   padding: 20px;
 }
 
+/* CONTAINER */
 .container {
-  max-width: 900px;
+  width: 100%;
+  max-width: 1300px;
   margin: auto;
 }
 
+/* CARD */
 .card {
   background: #1e293b;
   padding: 20px;
@@ -27,9 +30,45 @@ body {
   margin-bottom: 20px;
 }
 
+/* TOTAL */
 .total {
   font-size: 40px;
   font-weight: bold;
+}
+
+/* FILTER */
+.filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter label {
+  font-weight: bold;
+}
+
+.filter input {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: none;
+  background: #0f172a;
+  color: white;
+}
+
+.filter button {
+  padding: 8px 16px;
+  background: #38bdf8;
+  border: none;
+  border-radius: 6px;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.filter button:hover {
+  background: #0ea5e9;
 }
 
 /* LOADING */
@@ -70,8 +109,8 @@ body {
 
   <!-- FILTER -->
 
-  <div class="card">
-    <label>Tanggal:</label><br><br>
+  <div class="card filter">
+    <label>Tanggal:</label>
     <input type="date" id="startDate">
     <input type="date" id="endDate">
     <button onclick="loadData()">Filter</button>
@@ -135,9 +174,10 @@ async function loadData() {
       if (isSingleDay) {
         if (!time) return;
 
-        label = String(time)
-          .replace(":", ".")
-          .substring(0, 5);
+        // PER JAM (00.00)
+        let hour = String(time).substring(0, 2);
+        label = hour + ".00";
+
       } else {
         label = date;
       }
@@ -149,12 +189,18 @@ async function loadData() {
 
     document.getElementById("totalChat").innerText = total;
 
-    let labels = Object.keys(grouped);
+    let labels;
 
     if (isSingleDay) {
-      labels.sort((a, b) => a.localeCompare(b));
+      // tampilkan 00–23 lengkap
+      labels = [];
+      for (let i = 0; i < 24; i++) {
+        let h = String(i).padStart(2, "0") + ".00";
+        labels.push(h);
+        if (!grouped[h]) grouped[h] = 0;
+      }
     } else {
-      labels.sort();
+      labels = Object.keys(grouped).sort();
     }
 
     const values = labels.map(l => grouped[l]);
@@ -182,15 +228,27 @@ function renderChart(labels, data) {
         label: "Jumlah Chat",
         data: data,
         borderWidth: 2,
-        tension: 0.3
+        tension: 0.3,
+        pointRadius: 3
       }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: {
+          ticks: {
+            maxRotation: 0,
+            autoSkip: true,
+            maxTicksLimit: 12
+          }
+        }
+      }
     }
   });
 }
 
 loadData();
 </script>
-
 
 </body>
 </html>
